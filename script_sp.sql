@@ -290,3 +290,13 @@ CREATE PROCEDURE [Dbo].[SP_ASEGURADOS_LISTAR]
 				ON t1.SeguroId = t3.Id
 	END
 GO
+
+INSERT INTO Clientes (Cedula, Nombre, Telefono, Edad) VALUES ('0924826480', 'Fernando Reyes', '0981071134', 35)
+INSERT INTO Clientes (Cedula, Nombre, Telefono, Edad) VALUES ('0926726423', 'Samantha Peraza', '0966071275', 36)
+INSERT INTO Clientes (Cedula, Nombre, Telefono, Edad) VALUES ('0923325466', 'Arianna Ibarra', '0988071654', 28)
+INSERT INTO Clientes (Cedula, Nombre, Telefono, Edad) VALUES ('0925526118', 'Sophia Walket', '0955779988', 20)
+
+INSERT INTO Seguros (Codigo, Nombre, SemiAsegurada, Prima) VALUES ('SEG-XX001', 'SEGUROS ESTEBAN S.A.', 1300.50, 50)
+INSERT INTO Seguros (Codigo, Nombre, SemiAsegurada, Prima) VALUES ('SEG-XX002', 'SEGUROS REYES COORPORATION', 800.25, 90)
+INSERT INTO Seguros (Codigo, Nombre, SemiAsegurada, Prima) VALUES ('SEG-XX003', 'ASISTENCIA LAYENNE', 1780.00, 100)
+INSERT INTO Seguros (Codigo, Nombre, SemiAsegurada, Prima) VALUES ('SEG-XX004', 'COORP. ADA LOVELACE', 3200.00, 222)

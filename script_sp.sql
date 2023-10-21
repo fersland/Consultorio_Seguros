@@ -36,7 +36,7 @@ AS
 	END
 
 GO
-ALTER PROCEDURE [Dbo].[SP_CLIENTES_CREAR]
+CREATE PROCEDURE [Dbo].[SP_CLIENTES_CREAR]
 (
 	@Cedula nvarchar(10)
 	,@Nombre nvarchar(40)
@@ -75,7 +75,7 @@ AS
 	END
 
 GO
-ALTER PROCEDURE [Dbo].[SP_CLIENTES_EDITAR]
+CREATE PROCEDURE [Dbo].[SP_CLIENTES_EDITAR]
 (
 	@Id int
 	,@Cedula nvarchar(10)
@@ -172,7 +172,7 @@ AS
 
 	
 GO
-ALTER PROCEDURE [Dbo].[SP_SEGUROS_CREAR]
+CREATE PROCEDURE [Dbo].[SP_SEGUROS_CREAR]
 (
 	@Codigo nvarchar(50)
 	,@Nombre nvarchar(150)

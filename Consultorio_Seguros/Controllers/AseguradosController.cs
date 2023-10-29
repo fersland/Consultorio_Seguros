@@ -31,19 +31,11 @@ namespace Consultorio_Seguros.Controllers
             {
                 var appCedula = _context.Asegurados.Include(a => a.Clientes).Include(a => a.Seguros).Where(x => x.Clientes.Cedula == search || search == null);
                 return View(appCedula.ToList());
-                //return View(_context.Asegurados.Where(x => x.Clientes.Cedula == search || search == null).ToList());
             }
             else if (searchBy == "Codigo")
             {
                 var appCodigo = _context.Asegurados.Include(a => a.Clientes).Include(a => a.Seguros).Where(x => x.Seguros.Codigo == search || search == null);
                 return View(appCodigo.ToList());
-                /*}
-                else
-                {
-                    var appDbContext = _context.Asegurados.Include(a => a.Clientes).Include(a => a.Seguros);
-                    return View(appDbContext.ToList());
-                }*/
-
             }
             else
             {
@@ -84,7 +76,6 @@ namespace Consultorio_Seguros.Controllers
             [ValidateAntiForgeryToken]
             public IActionResult Create(Asegurado asegurado)
             {
-
                 try
                 {
                     var existe = _context.Asegurados.Any(a => a.ClienteId == asegurado.ClienteId && a.SeguroId == asegurado.SeguroId);
@@ -109,7 +100,6 @@ namespace Consultorio_Seguros.Controllers
                 }
                 return View();
             }
-
 
             public IActionResult Edit(int? id)
             {
@@ -158,42 +148,8 @@ namespace Consultorio_Seguros.Controllers
                 return View();
             }
 
-            /*[HttpPost]
-            [ValidateAntiForgeryToken]
-            public IActionResult Edit(int id, Asegurado asegurado)
-            {
-                if (id != asegurado.Id)
-                {
-                    return NotFound();
-                }
-
-                if (ModelState.IsValid)
-                {
-                    try
-                    {
-                        _context.Asegurados.Update(asegurado);
-                        _context.SaveChanges();
-                    }
-                    catch (DbUpdateConcurrencyException)
-                    {
-                        if (!AseguradoExists(asegurado.Id))
-                        {
-                            return NotFound();
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-                    return RedirectToAction(nameof(Index));
-                }
-                ViewBag.Seguros = _context.Seguros.ToList();
-                ViewBag.Clientes = _context.Clientes.ToList();
-                return View(asegurado);
-            }*/
-
                 // GET: Asegurados/Delete/5
-                public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Asegurados == null)
             {
@@ -230,7 +186,6 @@ namespace Consultorio_Seguros.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
         private bool AseguradoExists(int id)
         {
           return (_context.Asegurados?.Any(e => e.Id == id)).GetValueOrDefault();

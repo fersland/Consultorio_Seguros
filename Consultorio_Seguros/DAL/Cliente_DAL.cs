@@ -92,8 +92,6 @@ namespace Consultorio_Seguros.Process
             return cliente;
         }
 
-
-
         public bool Update(Cliente model)
         {
             int id = 0;

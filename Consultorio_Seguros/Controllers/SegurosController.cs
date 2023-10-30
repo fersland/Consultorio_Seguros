@@ -20,7 +20,6 @@ namespace Consultorio_Seguros.Controllers
             _dal = dal;
         }
 
-
         [HttpGet]
         public IActionResult Index()
         {

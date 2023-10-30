@@ -21,7 +21,6 @@ namespace Consultorio_Seguros.Models
         public string Telefono { get; set; }
         
         [Range(18,80, ErrorMessage = "La edad permitida debe ser de 18 a 80 años")]
-        //[StringLength(3, ErrorMessage = "La Longitud de este campo es de 3 caracteres", MinimumLength = 1)]
         public int Edad { get; set; }
     }
 }

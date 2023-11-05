@@ -18,11 +18,10 @@ namespace Consultorio_Seguros.DAL
             Config = builder.Build();
             return Config.GetConnectionString("db");
         }
-
-        public List<Asegurado> GetAll()
+        public List<AseguradoVM> GetAll()
         {
-            List<Asegurado> aseguradoListar = new List<Asegurado>();
-            using(db = new SqlConnection (GetConnectionString()))
+            List<AseguradoVM> aseguradoListar = new List<AseguradoVM>();
+            using (db = new SqlConnection(GetConnectionString()))
             {
                 command = db.CreateCommand();
                 command.CommandType = CommandType.StoredProcedure;
@@ -33,27 +32,124 @@ namespace Consultorio_Seguros.DAL
 
                 while (dr.Read())
                 {
-                    Asegurado asegurado = new Asegurado();
-                    Cliente cliente = new Cliente();
-                    Seguro seguro = new Seguro();
+                    var model = new AseguradoVM();
 
-                    asegurado.Id = Convert.ToInt32(dr["Id"]);
-                    cliente.Cedula = dr["CedulaCliente"].ToString();
-                    cliente.Nombre = dr["NombreCliente"].ToString();
-                    seguro.Codigo = dr["CodigoSeguro"].ToString();
-                    seguro.Nombre = dr["NombreSeguro"].ToString();
-                    seguro.SemiAsegurada = dr["Asegurada"].ToString();
-                    seguro.Prima = dr["Prima"].ToString();
-
-                    //seguro.SemiAsegurada = Convert.ToDecimal(dr["Asegurada"]);
-                    //seguro.Prima = Convert.ToDecimal(dr["Prima"]);
-                    //aseguradoListar.Add(asegurado, cliente, seguro);
-
+                    model.Id = Convert.ToInt32(dr["Id"]);
+                    model.CedulaCliente = dr["CedulaCliente"].ToString();
+                    model.NombreCliente = dr["NombreCliente"].ToString();
+                    model.CodigoSeguro = dr["CodigoSeguro"].ToString();
+                    model.NombreSeguro = dr["NombreSeguro"].ToString();
+                    model.Asegurada = dr["Asegurada"].ToString();
+                    model.Prima = Convert.ToDecimal(dr["Prima"].ToString());
+                    aseguradoListar.Add(model);
                 }
                 db.Close();
             }
+
             return aseguradoListar;
-        
+        }
+
+        public Asegurado GetById(int id)
+        {
+            Asegurado asegurado = new Asegurado();
+            using (db = new SqlConnection(GetConnectionString()))
+            {
+                command = db.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "[Dbo].[SP_ASEGURADOS_ID]";
+                command.Parameters.AddWithValue("@Id", id);
+                db.Open();
+
+                SqlDataReader dr = command.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    asegurado.Id = Convert.ToInt32(dr["Id"]);
+                    asegurado.ClienteId = Convert.ToInt32(dr["ClienteId"]);
+                    asegurado.SeguroId = Convert.ToInt32(dr["SeguroId"]);
+                }
+                db.Close();
+            }
+            return asegurado;
+        }
+
+        public AseguradoVM GetByCedula(string param)
+        {
+            AseguradoVM view = new AseguradoVM();
+            using (db = new SqlConnection(GetConnectionString())){
+                command = db.CreateCommand();
+                command.CommandText = "[Dbo].[SP_ASEGURADO_BUSCAR_CEDULA]";
+                command.Parameters.AddWithValue("@Cedula", param);
+                db.Open();
+
+                SqlDataReader dr = command.ExecuteReader();
+                while (dr.Read())
+                {
+                    view.Id = Convert.ToInt32(dr["Id"]);
+                    view.CedulaCliente = dr["CedulaCliente"].ToString();
+                    view.NombreCliente = dr["NombreCliente"].ToString();
+                    view.CodigoSeguro = dr["CodigoSeguro"].ToString();
+                    view.NombreSeguro = dr["NombreSeguro"].ToString();
+                    view.Asegurada = dr["Asegurada"].ToString();
+                    view.Prima = Convert.ToDecimal(dr["Prima"].ToString());
+                }
+                db.Close();
+            }
+            return view;
+        }
+
+        public bool Insert(Asegurado model)
+        {
+            int id = 0;
+            using (db = new SqlConnection(GetConnectionString()))
+            {
+                command = db.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "[Dbo].[SP_ASEGURADOS_CREAR]";
+                command.Parameters.AddWithValue("@ClienteId", model.ClienteId);
+                command.Parameters.AddWithValue("@SeguroId", model.SeguroId);
+                db.Open();
+                id = command.ExecuteNonQuery();
+                db.Close();
+            }
+
+            return id > 0 ? true : false;
+        }
+
+        public bool Update(Asegurado model)
+        {
+            int id = 0;
+            using (db = new SqlConnection(GetConnectionString()))
+            {
+                command = db.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "[Dbo].[SP_ASEGURADOS_EDITAR]";
+                command.Parameters.AddWithValue("@Id", model.Id);
+                command.Parameters.AddWithValue("@ClienteId", model.ClienteId);
+                command.Parameters.AddWithValue("@SeguroId", model.SeguroId);
+                db.Open();
+                id = command.ExecuteNonQuery();
+                db.Close();
+            }
+
+            return id > 0 ? true : false;
+        }
+
+        public bool Delete(int id)
+        {
+            int deleteRouwCount = 0;
+            using (db = new SqlConnection(GetConnectionString()))
+            {
+                command = db.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "[Dbo].[SP_ASEGURADOS_ELIMINAR]";
+                command.Parameters.AddWithValue("@Id", id);
+                db.Open();
+                deleteRouwCount = command.ExecuteNonQuery();
+                db.Close();
+            }
+
+            return deleteRouwCount > 0 ? true : false;
         }
     }
 }

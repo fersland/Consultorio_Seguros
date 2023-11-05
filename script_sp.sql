@@ -272,7 +272,7 @@ AS
 GO
 
 -- P R O C E D U R E S   A S E G U R A D O S
-CREATE PROCEDURE [Dbo].[SP_ASEGURADOS_LISTAR]
+ALTER PROCEDURE [Dbo].[SP_ASEGURADOS_LISTAR]
   AS
 	BEGIN
 		SELECT 
@@ -291,6 +291,27 @@ CREATE PROCEDURE [Dbo].[SP_ASEGURADOS_LISTAR]
 	END
 GO
 
+CREATE PROCEDURE [Dbo].[SP_ASEGURADO_BUSCAR_CEDULA]
+@Cedula nvarchar(10)
+  AS
+	BEGIN
+		SELECT 
+			t1.Id
+			,t2.Cedula		AS CedulaCliente
+			,t2.Nombre		AS NombreCliente
+			,t3.Codigo		AS CodigoSeguro
+			,t3.Nombre		AS NombreSeguro
+			,t3.SemiAsegurada AS Asegurada
+			,t3.Prima		AS Prima
+		FROM Dbo.Asegurados t1
+			INNER JOIN Dbo.Clientes t2
+				ON t1.ClienteId = t2.Id
+			INNER JOIN Dbo.Seguros t3
+				ON t1.SeguroId = t3.Id
+
+		WHERE t2.Cedula = @Cedula
+	END
+GO
 INSERT INTO Clientes (Cedula, Nombre, Telefono, Edad) VALUES ('0924826480', 'Fernando Reyes', '0981071134', 35)
 INSERT INTO Clientes (Cedula, Nombre, Telefono, Edad) VALUES ('0926726423', 'Samantha Peraza', '0966071275', 36)
 INSERT INTO Clientes (Cedula, Nombre, Telefono, Edad) VALUES ('0923325466', 'Arianna Ibarra', '0988071654', 28)

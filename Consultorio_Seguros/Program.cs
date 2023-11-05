@@ -10,6 +10,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer("name=db"));
 builder.Services.AddScoped<Cliente_DAL>();
 builder.Services.AddScoped<Seguro_DAL>();
+builder.Services.AddScoped<Asegurado_DAL>();
 
 var app = builder.Build();
 
@@ -30,6 +31,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Asegurados}/{action=Inicio}/{id?}");
+    pattern: "{controller=Clientes}/{action=Index}/{id?}");
 
 app.Run();

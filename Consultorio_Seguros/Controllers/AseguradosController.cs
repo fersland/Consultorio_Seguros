@@ -7,188 +7,200 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Consultorio_Seguros.Data;
 using Consultorio_Seguros.Models;
+using Consultorio_Seguros.DAL;
+using Consultorio_Seguros.Process;
 
 namespace Consultorio_Seguros.Controllers
 {
     public class AseguradosController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly Asegurado_DAL _dal;
+        private readonly Cliente_DAL _dal_cliente;
+        private readonly Seguro_DAL _dal_seguro;
 
-        public AseguradosController(AppDbContext context)
+        public AseguradosController(Asegurado_DAL dal, Cliente_DAL _dalcliente, Seguro_DAL _dalseguro)
         {
-            _context = context;
+            _dal = dal;
+            _dal_cliente = _dalcliente;
+            _dal_seguro = _dalseguro;
         }
 
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public IActionResult Index()
         {
-            var appDbContext = _context.Asegurados.Include(a => a.Clientes).Include(a => a.Seguros);
-            return View(await appDbContext.ToListAsync());
+            List<AseguradoVM> aseguradosVM = new List<AseguradoVM>();
+            try
+            {
+                aseguradosVM = _dal.GetAll();
+            }
+            catch (Exception ex)
+            {
+                TempData["errorMessage"] = ex.Message;
+            }
+            return View(aseguradosVM);
         }
-
-        public IActionResult Inicio(string searchBy, string search)
-        {
-            if (searchBy == "Cedula")
-            {
-                var appCedula = _context.Asegurados.Include(a => a.Clientes).Include(a => a.Seguros).Where(x => x.Clientes.Cedula == search || search == null);
-                return View(appCedula.ToList());
-            }
-            else if (searchBy == "Codigo")
-            {
-                var appCodigo = _context.Asegurados.Include(a => a.Clientes).Include(a => a.Seguros).Where(x => x.Seguros.Codigo == search || search == null);
-                return View(appCodigo.ToList());
-            }
-            else
-            {
-                var appDbContext = _context.Asegurados.Include(a => a.Clientes).Include(a => a.Seguros);
-                return View(appDbContext.ToList());
-            }
-        }
-
-            // GET: Asegurados/Details/5
-            public async Task<IActionResult> Details(int? id)
-            {
-                if (id == null || _context.Asegurados == null)
-                {
-                    return NotFound();
-                }
-
-                var asegurado = await _context.Asegurados
-                    .Include(a => a.Clientes)
-                    .Include(a => a.Seguros)
-                    .FirstOrDefaultAsync(m => m.Id == id);
-                if (asegurado == null)
-                {
-                    return NotFound();
-                }
-
-                return View(asegurado);
-            }
 
             // GET: Asegurados/Create
-            public IActionResult Create()
+        public IActionResult Create()
+        {
+            List<Cliente> listCliente = new List<Cliente>();
+            List<Seguro> listSeguro = new List<Seguro>();
+
+            listCliente = _dal_cliente.GetAll();
+            listSeguro = _dal_seguro.GetAll();
+
+            ViewBag.Clientes = listCliente.ToList();
+            ViewBag.Seguros = listSeguro.ToList();
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Create(Asegurado seguro)
+        {
+            List<Cliente> listCliente = new List<Cliente>();
+            List<Seguro> listSeguro = new List<Seguro>();
+
+            listCliente = _dal_cliente.GetAll();
+            listSeguro = _dal_seguro.GetAll();
+
+            ViewBag.Clientes = listCliente.ToList();
+            ViewBag.Seguros = listSeguro.ToList();
+
+            try
+            {                
+                bool result = _dal.Insert(seguro);
+
+                if (!result)
+                {
+                    TempData["errorMessage"] = "Este Cliente ya tiene este Seguro en la base de datos.";
+                    return View();
+                }
+
+                TempData["successMessage"] = "Seguro agregado correctamente.";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
             {
-                ViewBag.Seguros = _context.Seguros.ToList();
-                ViewBag.Clientes = _context.Clientes.ToList();
+                TempData["errorMessage"] = ex.Message;
                 return View();
             }
+        }
 
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public IActionResult Create(Asegurado asegurado)
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            List<Cliente> listCliente = new List<Cliente>();
+            List<Seguro> listSeguro = new List<Seguro>();
+
+            listCliente = _dal_cliente.GetAll();
+            listSeguro = _dal_seguro.GetAll();
+
+            ViewBag.Clientes = listCliente.ToList();
+            ViewBag.Seguros = listSeguro.ToList();
+
+            try
             {
-                try
+                Asegurado asegurado = _dal.GetById(id);
+                if (asegurado.Id == 0)
                 {
-                    var existe = _context.Asegurados.Any(a => a.ClienteId == asegurado.ClienteId && a.SeguroId == asegurado.SeguroId);
-
-                    if (!existe)
-                    {
-                        _context.Asegurados.Add(asegurado);
-                        _context.SaveChanges();
-                        TempData["successMessage"] = "Seguro agregado correctamente.";
-                        return RedirectToAction(nameof(Index));
-                    }
-                    else
-                    {
-                        TempData["errorMessage"] = "Este Seguro ya existe.";
-                        return RedirectToAction(nameof(Index));
-                    }
-                }
-                catch (Exception)
-                {
-                    TempData["errorMessage"] = "Los datos son invalidos";
-                    return RedirectToAction(nameof(Index));
-                }
-                return View();
-            }
-
-            public IActionResult Edit(int? id)
-            {
-                if (id == null || _context.Asegurados == null)
-                {
-                    return NotFound();
+                    TempData["errorMessage"] = $"No existe un Asegurado con la Id : {id}";
+                    return RedirectToAction("Index");
                 }
 
-                var asegurado = _context.Asegurados.Find(id);
-                if (asegurado == null)
-                {
-                    return NotFound();
-                }
-                ViewBag.Seguros = _context.Seguros.ToList();
-                ViewBag.Clientes = _context.Clientes.ToList();
                 return View(asegurado);
             }
-
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public IActionResult Edit(int id, Asegurado asegurado)
+            catch (Exception ex)
             {
-
-                try
-                {
-                    var existe = _context.Asegurados.Any(a => a.ClienteId == asegurado.ClienteId && a.SeguroId == asegurado.SeguroId);
-
-                    if (!existe)
-                    {
-                        _context.Asegurados.Update(asegurado);
-                        _context.SaveChanges();
-                        TempData["successMessage"] = "Seguro actualizado correctamente.";
-                        return RedirectToAction(nameof(Index));
-                    }
-                    else
-                    {
-                        TempData["errorMessage"] = "Este Seguro ya existe.";
-                        return RedirectToAction(nameof(Index));
-                    }
-                }
-                catch (Exception)
-                {
-                    TempData["errorMessage"] = "Los datos son invalidos";
-                    return RedirectToAction(nameof(Index));
-                }
+                TempData["errorMessage"] = ex.Message;
                 return View();
             }
+        }
 
-                // GET: Asegurados/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [HttpPost]
+        public IActionResult Edit(Asegurado model)
         {
-            if (id == null || _context.Asegurados == null)
-            {
-                return NotFound();
-            }
+            List<Cliente> listCliente = new List<Cliente>();
+            List<Seguro> listSeguro = new List<Seguro>();
 
-            var asegurado = await _context.Asegurados
-                .Include(a => a.Clientes)
-                .Include(a => a.Seguros)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (asegurado == null)
-            {
-                return NotFound();
-            }
+            listCliente = _dal_cliente.GetAll();
+            listSeguro = _dal_seguro.GetAll();
 
-            return View(asegurado);
+            ViewBag.Clientes = listCliente.ToList();
+            ViewBag.Seguros = listSeguro.ToList();
+
+            try
+            {                
+                bool result = _dal.Update(model);
+
+                if (!result)
+                {
+                    TempData["errorMessage"] = "Error al actualizar los datos del asegurado";
+                    return View();
+                }
+
+                TempData["successMessage"] = "Los datos del Asegurado han sido actualizados";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["errorMessage"] = ex.Message;
+                return View();
+            }
+        }
+
+        // GET: Asegurados/Delete/5
+        [HttpGet]
+        public IActionResult Delete(int id)
+        {
+            List<Cliente> listCliente = new List<Cliente>();
+            List<Seguro> listSeguro = new List<Seguro>();
+
+            listCliente = _dal_cliente.GetAll();
+            listSeguro = _dal_seguro.GetAll();
+
+            ViewBag.Clientes = listCliente.ToList();
+            ViewBag.Seguros = listSeguro.ToList();
+
+            try
+            {
+                Asegurado asegurado = _dal.GetById(id);
+                if (asegurado.Id == 0)
+                {
+                    TempData["errorMessage"] = $"No existe un Asegurado con la Id : {id}";
+                    return RedirectToAction("Index");
+                }
+
+                return View(asegurado);
+            }
+            catch (Exception ex)
+            {
+                TempData["errorMessage"] = ex.Message;
+                return View();
+            }
         }
 
         // POST: Asegurados/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(Asegurado model)
         {
-            if (_context.Asegurados == null)
+            try
             {
-                return Problem("Entity set 'AppDbContext.Asegurados'  is null.");
+                bool result = _dal.Delete(model.Id);
+
+                if (!result)
+                {
+                    TempData["errorMessage"] = "Error al eliminar los datos del asegurado";
+                    return View();
+                }
+
+                TempData["successMessage"] = "Los datos del asegurado han sido eliminados";
+                return RedirectToAction("Index");
             }
-            var asegurado = await _context.Asegurados.FindAsync(id);
-            if (asegurado != null)
+            catch (Exception ex)
             {
-                _context.Asegurados.Remove(asegurado);
+                TempData["errorMessage"] = ex.Message;
+                return View();
             }
-            
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-        private bool AseguradoExists(int id)
-        {
-          return (_context.Asegurados?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

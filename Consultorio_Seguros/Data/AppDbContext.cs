@@ -10,5 +10,6 @@ namespace Consultorio_Seguros.Data
         public DbSet<Cliente> Clientes {  get; set; }
         public DbSet<Seguro> Seguros { get; set; }
         public DbSet<Asegurado> Asegurados {  get; set; }
+        public DbSet<AseguradoVM> AseguradosVM { get; set; }
     }
 }

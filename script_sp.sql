@@ -290,7 +290,7 @@ ALTER PROCEDURE [Dbo].[SP_ASEGURADOS_LISTAR]
 				ON t1.SeguroId = t3.Id
 	END
 GO
-
+exec SP_ASEGURADO_BUSCAR_CEDULA '0938382718'
 CREATE PROCEDURE [Dbo].[SP_ASEGURADO_BUSCAR_CEDULA]
 @Cedula nvarchar(10)
   AS
@@ -311,7 +311,119 @@ CREATE PROCEDURE [Dbo].[SP_ASEGURADO_BUSCAR_CEDULA]
 
 		WHERE t2.Cedula = @Cedula
 	END
+
+SELECT COUNT(1) FROM dbo.Asegurados WITH (NOLOCK) 
+							WHERE ClienteId = 3 AND SeguroId =7
 GO
+CREATE PROCEDURE [Dbo].[SP_ASEGURADOS_CREAR]
+(
+	@ClienteId int
+	,@SeguroId int
+)
+AS
+	BEGIN
+	DECLARE @ROWCOUNT INT = 0
+		BEGIN TRY
+		SET @ROWCOUNT = (SELECT COUNT(1) FROM dbo.Asegurados WITH (NOLOCK) 
+							WHERE ClienteId = @ClienteId AND SeguroId = @SeguroId)
+		IF (@ROWCOUNT = 0)
+		BEGIN
+			BEGIN TRAN
+				INSERT INTO Asegurados
+					(
+						ClienteId
+						,SeguroId
+					)
+				VALUES
+					(
+						@ClienteId
+						,@SeguroId
+					)
+			COMMIT TRAN
+			END
+		END TRY
+
+		BEGIN CATCH
+			ROLLBACK TRAN
+		END CATCH
+	END
+GO
+CREATE PROCEDURE [Dbo].[SP_ASEGURADOS_EDITAR]
+(
+	@Id int
+	,@ClienteId int
+	,@SeguroId int
+)
+AS
+	BEGIN
+	DECLARE @ROWCOUNT INT = 0
+		BEGIN TRY
+		SET @ROWCOUNT = (SELECT COUNT(1) FROM dbo.Asegurados WITH (NOLOCK) 
+							WHERE ClienteId = @ClienteId AND SeguroId = @SeguroId)
+		IF (@ROWCOUNT = 0)
+		BEGIN
+			BEGIN TRAN
+				
+				UPDATE Asegurados
+					SET
+						ClienteId = @ClienteId
+						,SeguroId = @SeguroId
+				WHERE Id = @Id
+										
+			COMMIT TRAN
+			END
+		END TRY
+
+		BEGIN CATCH
+			ROLLBACK TRAN
+		END CATCH
+	END
+
+GO
+
+CREATE PROCEDURE [Dbo].[SP_ASEGURADOS_ID]
+(
+	@Id INT
+)
+AS
+	BEGIN
+		SELECT 
+			Id
+			,ClienteId
+			,SeguroId
+			
+		FROM
+			Dbo.Asegurados WITH (NOLOCK)
+		WHERE 
+			Id=@Id
+	END
+GO
+CREATE PROCEDURE [Dbo].[SP_ASEGURADOS_ELIMINAR]
+(
+	@Id int
+)
+AS
+	BEGIN
+		DECLARE @count INT = 0
+		BEGIN TRY
+			SET @count = (SELECT COUNT(1) FROM dbo.Asegurados WITH (NOLOCK) WHERE Id=@Id)
+
+			IF (@count > 0)
+				BEGIN
+					BEGIN TRAN
+						DELETE FROM dbo.Asegurados
+							WHERE 
+								Id = @Id
+					COMMIT TRAN
+				END
+		END TRY
+
+		BEGIN CATCH
+			ROLLBACK TRAN
+		END CATCH
+	END
+GO
+
 INSERT INTO Clientes (Cedula, Nombre, Telefono, Edad) VALUES ('0924826480', 'Fernando Reyes', '0981071134', 35)
 INSERT INTO Clientes (Cedula, Nombre, Telefono, Edad) VALUES ('0926726423', 'Samantha Peraza', '0966071275', 36)
 INSERT INTO Clientes (Cedula, Nombre, Telefono, Edad) VALUES ('0923325466', 'Arianna Ibarra', '0988071654', 28)

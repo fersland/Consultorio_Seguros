@@ -1,0 +1,4 @@
+1. Este proyecto no usa entity framework
+2. usa el patron DAL
+3. se realiza consultas a la base de datos mediante store procedure
+4. esta ubicado en Documentos/NET
